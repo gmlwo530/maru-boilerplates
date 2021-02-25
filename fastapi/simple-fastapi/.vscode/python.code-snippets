@@ -1,0 +1,11 @@
+{
+    "Make path operation function": {
+        "prefix": "func",
+        "body": [
+            "@app.$1($2)",
+            "async def $3($4):",
+            "\treturn $5"
+        ],
+        "description": "make path operation function for fastapi"
+    }
+}

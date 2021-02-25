@@ -1,0 +1,43 @@
+# https://www.44bits.io/ko/post/almost-perfect-development-environment-with-docker-and-docker-compose
+version: "3"
+
+volumes:
+  django_sample_db_dev: {}
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: django_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - django_sample_db_dev:/var/lib/mysql/
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    ports:
+      - "3307:3306"
+
+  django:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-dev
+    environment:
+      - DJANGO_DEBUG=True
+      - DJANGO_DB_HOST=db
+      - DJANGO_DB_PORT=3306
+      - DJANGO_DB_NAME=${DB_DATABASE}
+      - DJANGO_DB_USERNAME=${DB_USER}
+      - DJANGO_DB_PASSWORD=${DB_PASSWORD}
+      - DJANGO_SECRET_KEY=dev_secret_key
+    ports:
+      - "8000:8000"
+    command:
+      - bash
+      - -c
+      - |
+        /wait-for-it.sh db:3306 -t 10
+        python manage.py runserver 0:8000
+    volumes:
+      - ./:/app/
